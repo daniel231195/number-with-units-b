@@ -10,16 +10,7 @@ namespace ariel{
 
     static map<string,map<string,double> >board_units;
     const double eps=0.000001;
-    const double t=1.0;
     NumberWithUnits::NumberWithUnits(double sum,const string& unit){
-        // string str;
-        // for (size_t i = 0; i < unit.length(); i++)
-        // {
-        //     if(unit[i]!='[' && unit[i]!=']')
-        //     {
-        //         str=str+unit[i];
-        //     }
-        // }
         if(board_units.count(unit)!=0){
             this->number=sum;
             this->type=unit;
@@ -55,18 +46,19 @@ namespace ariel{
                     board_units[unit_1][add_u1.first] = sum;
             }  
         }
-        // for(auto &i : board_units)
-        // {
-        //     cout << "-------------------------------" << endl ; 
-        //     cout << endl ;
-        //     cout << "unit----->>>" << i.first << ": " ; 
-        //     cout<< endl;
-        //     for (auto &k: i.second)
-        //     {
-        //         cout <<"type to : " <<k.first << ", is : " << k.second << "|| " ;
-        //     }
-        //     cout<< endl;
-        // }        
+        //print board of unit 
+        for(auto &i : board_units)
+        {
+            cout << "-------------------------------" << endl ; 
+            cout << endl ;
+            cout << "unit----->>>" << i.first << ": " ; 
+            cout<< endl;
+            for (auto &k: i.second)
+            {
+                cout <<"type to : " <<k.first << ", is : " << k.second << "|| " ;
+            }
+            cout<< endl;
+        }        
     }
      double  changing(const std::string &unit_from,const std::string &unit_to, double num_change){
          string str_to;
@@ -105,29 +97,26 @@ namespace ariel{
         return out;
     }
     istream& operator>> (istream& in, NumberWithUnits& num){
-        char t=0;
-        char u=0 ;
+        char n=0;
+        char t=0 ;
         string unit;
-        in >> num.number >> t ;
-        in >> u;
-        while (u != ']'){
-            unit+=u;
-            in >> u;
+        in >> num.number >> n ;
+        in >> t;
+        while (t != ']'){
+            unit+=t;
+            in >> t;
         }
         if (board_units.count(unit)==0)
             {
-                throw std::out_of_range{"Error!! invalid unit! \n"};
+                throw std::invalid_argument("Unit  to does not exist  4 ");
             }
         num.type = unit;
         return in;
 
     }
 
-    // operator -
-
     NumberWithUnits NumberWithUnits::operator+ (const NumberWithUnits &x)const{ 
         double num=changing(x.type,this->type,x.number);
-
         return NumberWithUnits((this->number)+num, this->type);
     }
     NumberWithUnits NumberWithUnits::operator+ () const{
@@ -138,9 +127,6 @@ namespace ariel{
         this->number+=num;
         return *this;
     }
-
-    // operator +
-
     NumberWithUnits NumberWithUnits::operator- (const NumberWithUnits& x) const{
         double num=changing(x.type,this->type,x.number);
         return NumberWithUnits((this->number)-num, this->type);
@@ -151,10 +137,8 @@ namespace ariel{
     NumberWithUnits& NumberWithUnits::operator-= (const NumberWithUnits& x){
         double num=changing(x.type,this->type,x.number);
         this->number-=num;
-       return *this;
+        return *this;
     }
-
-
     NumberWithUnits& NumberWithUnits::operator++ () {
         ++(this->number);
         return *this;
@@ -169,8 +153,6 @@ namespace ariel{
     NumberWithUnits NumberWithUnits::operator-- (int) {
         return NumberWithUnits((this->number)--, this->type);
     }
-
-
     NumberWithUnits operator* (const NumberWithUnits& num, double x) {
         return NumberWithUnits(num.number*x, num.type);
     }
@@ -181,38 +163,26 @@ namespace ariel{
         this->number*=x;
         return *this;
     }
-
-
-
     bool operator> (const NumberWithUnits& x, const NumberWithUnits& y){
-            double num=x.number-changing(y.type,x.type,y.number);
-            
-            return ((num>eps));
+        double num=x.number-changing(y.type,x.type,y.number);   
+        return ((num>eps));
     }
     bool operator>= (const NumberWithUnits& x, const NumberWithUnits& y){
-            double num=x.number-changing(y.type,x.type,y.number);
-            return ((x>y)||(num==0));
+        double num=x.number-changing(y.type,x.type,y.number);
+        return ((x>y)||(num==0));
     }
     bool operator< (const NumberWithUnits& x, const NumberWithUnits& y){
         double num=y.number-changing(x.type,y.type,x.number); 
         return ((eps<num));
     }
     bool operator<= (const NumberWithUnits& x, const NumberWithUnits& y){
-            double num=y.number-changing(x.type,y.type,x.number);
-            return ((num>eps)||(num==0));
+        double num=y.number-changing(x.type,y.type,x.number);
+        double p=changing(x.type,y.type,x.number);
+        return ((num>eps)||(num==0)||((fabs(y.number-p)<eps)));
     }
     bool operator == (const NumberWithUnits& x, const NumberWithUnits& y){  
-             double w=changing(y.type,x.type,y.number);
-            if(w>=0 && x.number>=0){
-                return((fabs(x.number-w)<eps));
-            }
-            if(x.number>=0 && w<0){
-                return(-1==eps);
-            }
-            if(x.number<0 && w>=0){
-                return(-1==eps);
-            }
-         return ((x.number-w)==0);
+        double w=changing(y.type,x.type,y.number);
+        return ((fabs(x.number-w)<eps));
     }
     bool operator!= (const NumberWithUnits& x, const NumberWithUnits& y){
         double num=abs(x.number)-abs(changing(y.type,x.type,y.number));
